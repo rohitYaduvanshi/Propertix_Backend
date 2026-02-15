@@ -7,6 +7,8 @@ import { users } from './db/schema.js';
 import { eq } from 'drizzle-orm';
 
 const app = express();
+
+// CORS configuration (Security ke liye production URL dalna behtar hai)
 app.use(cors());
 app.use(express.json());
 
@@ -15,9 +17,9 @@ const sql = neon(process.env.DATABASE_URL);
 const db = drizzle(sql);
 
 // 2. API: Health Check
-app.get('/', (req, res) => res.send("Propertix Neon Backend is Live! 🚀"));
+app.get('/', (req, res) => res.send("Propertix Neon Backend is Live on Vercel! 🚀"));
 
-// 3. API: Register User (Neon DB + Drizzle)
+// 3. API: Register User
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, role, walletAddress } = req.body;
   
@@ -61,7 +63,15 @@ app.get('/api/auth/user/:address', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+// --- VERCEL SPECIFIC UPDATE ---
+
+// Vercel handles the serverless execution, so app needs to be exported
+export default app;
+
+// Listen only when running locally (Not on Vercel)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Local Server running on http://localhost:${PORT}`);
+  });
+}
